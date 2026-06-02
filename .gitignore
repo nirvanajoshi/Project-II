@@ -1,22 +1,9 @@
-# Virtual environment
 venv/
-env/
-
-# Python cache
 __pycache__/
 *.pyc
-
-# Django database & media
 db.sqlite3
 db.sqlite3-journal
-/media/
-/staticfiles/
-
-# Secrets
 .env
-
-# Editor / OS files
 .vscode/
 .idea/
 .DS_Store
-Thumbs.db
