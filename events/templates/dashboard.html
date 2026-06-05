@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Dashboard</h1>
+    <p>Welcome back, {{ user.username }}.</p>
+
+    <section>
+        <h2>Overview</h2>
+        <ul>
+            <li>Total events: {{ events_count }}</li>
+            <li>User email: {{ user.email|default:'Not provided' }}</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Actions</h2>
+        <p><a href="{% url 'home' %}">Go to home</a></p>
+        <p><a href="{% url 'logout' %}">Logout</a></p>
+    </section>
+</body>
+</html>
