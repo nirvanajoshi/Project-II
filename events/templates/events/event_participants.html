@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registered participants</title>
+</head>
+<body>
+    <h1>Participants for {{ event.title }}</h1>
+    {% if participants %}
+        <ul>
+            {% for participant in participants %}
+                <li>{{ participant.username }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No participants have registered yet.</p>
+    {% endif %}
+    <p><a href="{% url 'event_detail' event.id %}">Back to event</a></p>
+</body>
+</html>

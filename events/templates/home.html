@@ -6,15 +6,51 @@
 <body>
     <h1>Event Management System</h1>
     {% if user.is_authenticated %}
-        <p>Hello, {{ user.username }}! You are logged in.</p>
-        <p><a href="{% url 'dashboard' %}">Go to dashboard</a></p>
-        <form method="post" action="{% url 'logout' %}">
+        <p>Welcome back, {{ user.username }}! <a href="{% url 'dashboard' %}">Dashboard</a> | 
+        <form method="post" action="{% url 'logout' %}" style="display: inline;">
             {% csrf_token %}
-            <button type="submit">Logout</button>
-        </form>
+            <button type="submit" style="background: none; border: none; color: blue; cursor: pointer; text-decoration: underline;">Logout</button>
+        </form></p>
     {% else %}
-        <p>You are not logged in.</p>
-        <a href="{% url 'login' %}">Login</a>
+        <p><a href="{% url 'login' %}">Login</a> | <a href="{% url 'register' %}">Register</a></p>
     {% endif %}
+
+    <section>
+        <h2>Search events</h2>
+        <form method="get" action="{% url 'home' %}">
+            <label>Keyword: <input type="text" name="q" value="{{ query }}" placeholder="Search title, description, location" /></label>
+            <label>Category:
+                <select name="category">
+                    <option value="">All categories</option>
+                    {% for code,label in categories %}
+                        <option value="{{ code }}" {% if code == selected_category %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <button type="submit">Search</button>
+        </form>
+    </section>
+
+    {% if user.is_authenticated %}
+        <p><a href="{% url 'create_event' %}">Create a new event</a></p>
+    {% endif %}
+
+    <section>
+        <h2>Events</h2>
+        {% if events %}
+            <ul>
+                {% for event in events %}
+                    <li>
+                        <a href="{% url 'event_detail' event.id %}">{{ event.title }}</a> — {{ event.get_category_display }}
+                        on {{ event.date }} at {{ event.time }}
+                        <br />
+                        {{ event.location }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No events found. Try another search or create a new event.</p>
+        {% endif %}
+    </section>
 </body>
 </html>

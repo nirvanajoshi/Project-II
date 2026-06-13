@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ event.title }}</title>
+</head>
+<body>
+    <h1>{{ event.title }}</h1>
+    <p><strong>Category:</strong> {{ event.get_category_display }}</p>
+    <p><strong>Date:</strong> {{ event.date }}</p>
+    <p><strong>Time:</strong> {{ event.time }}</p>
+    <p><strong>Location:</strong> {{ event.location }}</p>
+    <p>{{ event.description }}</p>
+    <p><strong>Organizer:</strong> {{ event.created_by.username|default:'Unknown' }}</p>
+
+    {% if user.is_authenticated %}
+        {% if is_registered %}
+            <form method="post" action="{% url 'cancel_registration' event.id %}">
+                {% csrf_token %}
+                <button type="submit">Cancel registration</button>
+            </form>
+        {% else %}
+            <form method="post" action="{% url 'register_for_event' event.id %}">
+                {% csrf_token %}
+                <button type="submit">Register for this event</button>
+            </form>
+        {% endif %}
+    {% else %}
+        <p><a href="{% url 'login' %}">Login</a> to register.</p>
+    {% endif %}
+
+    <p><a href="{% url 'event_participants' event.id %}">View registered participants</a></p>
+
+    {% if user == event.created_by %}
+        <p>
+            <a href="{% url 'update_event' event.id %}">Edit event</a> |
+            <a href="{% url 'delete_event' event.id %}">Delete event</a>
+        </p>
+    {% endif %}
+
+    <p><a href="{% url 'home' %}">Back to events</a></p>
+</body>
+</html>

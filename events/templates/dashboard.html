@@ -17,8 +17,12 @@
 
     <section>
         <h2>Actions</h2>
-        <p><a href="{% url 'home' %}">Go to home</a></p>
-        <p><a href="{% url 'logout' %}">Logout</a></p>
+        <p><a href="{% url 'home' %}">Browse events</a></p>
+        <p><a href="{% url 'create_event' %}">Create event</a></p>
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
     </section>
 </body>
 </html>
