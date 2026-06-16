@@ -36,6 +36,13 @@ class Event(models.Model):
         blank=True,
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    venue = models.ForeignKey(
+        'Venue',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='events'
+    )
 
     def __str__(self):
         return self.title
@@ -43,14 +50,89 @@ class Event(models.Model):
     def is_registered(self, user):
         return self.participants.filter(pk=user.pk).exists()
 
+    def tickets_sold(self):
+        # Sum of confirmed bookings for this event
+        return Booking.objects.filter(ticket__event=self, status=Booking.STATUS_BOOKED).aggregate(models.Sum('quantity'))['quantity__sum'] or 0
+
 
 class Registration(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     registered_at = models.DateTimeField(auto_now_add=True)
+    full_name = models.CharField(max_length=200, blank=True)
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=30, blank=True)
+    address = models.TextField(blank=True)
 
     class Meta:
         unique_together = ('user', 'event')
 
     def __str__(self):
         return f"{self.user.username} registered for {self.event.title}"
+
+
+class Venue(models.Model):
+    name = models.CharField(max_length=200)
+    capacity = models.PositiveIntegerField()
+    location = models.CharField(max_length=300)
+    is_available = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Ticket(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='tickets')
+    name = models.CharField(max_length=100, default='General')
+    is_paid = models.BooleanField(default=False)
+    price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    total_quantity = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.name} - {self.event.title}"
+
+
+class Booking(models.Model):
+    STATUS_BOOKED = 'booked'
+    STATUS_CANCELLED = 'cancelled'
+
+    STATUS_CHOICES = [
+        (STATUS_BOOKED, 'Booked'),
+        (STATUS_CANCELLED, 'Cancelled'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    booked_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_BOOKED)
+
+    class Meta:
+        unique_together = ('user', 'ticket')
+
+    def __str__(self):
+        return f"{self.user.username} booked {self.quantity} x {self.ticket.name} for {self.ticket.event.title}"
+
+
+class Attendance(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    attended = models.BooleanField(default=False)
+    marked_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'event')
+
+    def __str__(self):
+        return f"{self.user.username} attendance for {self.event.title}: {self.attended}"
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, null=True, blank=True)
+    message = models.TextField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+    read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Notification to {self.user.username}: {self.message[:40]}"

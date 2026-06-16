@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Register for {{ event.title }}</title>
+  </head>
+  <body>
+    <h1>Register for {{ event.title }}</h1>
+    <form method="post">
+      {% csrf_token %} {{ form.as_p }}
+      <button type="submit">Submit Registration</button>
+      <a href="{% url 'event_detail' event.id %}">Cancel</a>
+    </form>
+  </body>
+</html>

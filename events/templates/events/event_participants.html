@@ -1,19 +1,25 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
+  <head>
     <title>Registered participants</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Participants for {{ event.title }}</h1>
-    {% if participants %}
-        <ul>
-            {% for participant in participants %}
-                <li>{{ participant.username }}</li>
-            {% endfor %}
-        </ul>
+    {% if registrations %}
+    <ul>
+      {% for reg in registrations %}
+      <li>
+        <strong>{{ reg.full_name|default:reg.user.username }}</strong><br />
+        Email: {{ reg.email|default:reg.user.email }}<br />
+        Phone: {{ reg.phone }}<br />
+        Address: {{ reg.address }}<br />
+        Registered at: {{ reg.registered_at }}
+      </li>
+      {% endfor %}
+    </ul>
     {% else %}
-        <p>No participants have registered yet.</p>
+    <p>No participants have registered yet.</p>
     {% endif %}
     <p><a href="{% url 'event_detail' event.id %}">Back to event</a></p>
-</body>
+  </body>
 </html>
