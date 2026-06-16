@@ -4,10 +4,11 @@ from .models import Event
 class EventForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ['title', 'description', 'category', 'date', 'time', 'location']
+        fields = ['title', 'description', 'category', 'date', 'time', 'location', 'max_participants']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'time': forms.TimeInput(attrs={'type': 'time'}),
+            'max_participants': forms.NumberInput(attrs={'type': 'number', 'min': '1', 'placeholder': 'Leave empty for unlimited'}),
         }
 
 

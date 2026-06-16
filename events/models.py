@@ -43,12 +43,25 @@ class Event(models.Model):
         on_delete=models.SET_NULL,
         related_name='events'
     )
+    max_participants = models.PositiveIntegerField(null=True, blank=True, help_text="Leave blank for unlimited participants")
 
     def __str__(self):
         return self.title
 
     def is_registered(self, user):
         return self.participants.filter(pk=user.pk).exists()
+    
+    def is_full(self):
+        """Check if event has reached max participants"""
+        if self.max_participants is None:
+            return False
+        return self.participants.count() >= self.max_participants
+    
+    def get_available_spots(self):
+        """Get number of available spots"""
+        if self.max_participants is None:
+            return None
+        return self.max_participants - self.participants.count()
 
     def tickets_sold(self):
         # Sum of confirmed bookings for this event

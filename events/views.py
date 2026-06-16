@@ -81,7 +81,16 @@ def create_event(request):
 def event_detail(request, event_id):
     event = get_object_or_404(Event, pk=event_id)
     is_registered = request.user.is_authenticated and event.is_registered(request.user)
-    return render(request, 'events/event_detail.html', {'event': event, 'is_registered': is_registered})
+    participant_count = event.participants.count()
+    is_full = event.is_full()
+    available_spots = event.get_available_spots()
+    return render(request, 'events/event_detail.html', {
+        'event': event, 
+        'is_registered': is_registered, 
+        'participant_count': participant_count,
+        'is_full': is_full,
+        'available_spots': available_spots
+    })
 
 
 @login_required
@@ -206,13 +215,24 @@ def delete_event(request, event_id):
 def register_for_event(request, event_id):
     from .forms import RegistrationForm
     from .models import Notification
+    from django.contrib import messages
 
     event = get_object_or_404(Event, pk=event_id)
+
+    # Check if event is already full
+    if event.is_full() and not event.is_registered(request.user):
+        messages.error(request, f'Sorry! {event.title} has reached the maximum number of participants.')
+        return redirect('event_detail', event_id=event.id)
 
     # show form to collect participant details
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
+            # Double-check event is not full
+            if event.is_full() and not event.is_registered(request.user):
+                messages.error(request, f'Sorry! {event.title} has reached the maximum number of participants.')
+                return redirect('event_detail', event_id=event.id)
+            
             reg, created = Registration.objects.get_or_create(user=request.user, event=event)
             reg.full_name = form.cleaned_data.get('full_name')
             reg.email = form.cleaned_data.get('email')
@@ -228,6 +248,7 @@ def register_for_event(request, event_id):
                     message=f"{request.user.username} registered for {event.title}."
                 )
 
+            messages.success(request, f'You have successfully registered for {event.title}!')
             return redirect('event_detail', event_id=event.id)
     else:
         form = RegistrationForm()
@@ -246,9 +267,9 @@ def cancel_registration(request, event_id):
 def event_participants(request, event_id):
     event = get_object_or_404(Event, pk=event_id)
     from .models import Registration
-    # only show full list to organizer or staff; other users see their own registration
-    if request.user == event.created_by or request.user.is_staff:
-        registrations = Registration.objects.filter(event=event).order_by('registered_at')
-    else:
-        registrations = Registration.objects.filter(event=event, user=request.user)
+    # Only allow organizer and staff to view participant details
+    if request.user != event.created_by and not request.user.is_staff:
+        return redirect('event_detail', event_id=event.id)
+    
+    registrations = Registration.objects.filter(event=event).order_by('registered_at')
     return render(request, 'events/event_participants.html', {'event': event, 'registrations': registrations})
