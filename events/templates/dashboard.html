@@ -1,28 +1,39 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Dashboard</title>
-</head>
-<body>
-    <h1>Dashboard</h1>
-    <p>Welcome back, {{ user.username }}.</p>
+{% extends 'base.html' %}
 
-    <section>
-        <h2>Overview</h2>
-        <ul>
-            <li>Total events: {{ events_count }}</li>
-            <li>User email: {{ user.email|default:'Not provided' }}</li>
-        </ul>
-    </section>
+{% block title %}Dashboard | Eventory{% endblock %}
 
-    <section>
-        <h2>Actions</h2>
-        <p><a href="{% url 'home' %}">Browse events</a></p>
-        <p><a href="{% url 'create_event' %}">Create event</a></p>
+{% block content %}
+<section class="page-hero compact">
+    <span class="eyebrow">Organizer dashboard</span>
+    <h1>Welcome back, {{ user.username }}.</h1>
+    <p>Manage your event activity, review account details, and quickly move into planning mode.</p>
+</section>
+
+<section class="dashboard-grid">
+    <article class="stat-card">
+        <span class="stat-label">Total events</span>
+        <strong>{{ events_count }}</strong>
+        <p>Events currently listed in the system.</p>
+    </article>
+    <article class="stat-card">
+        <span class="stat-label">Account email</span>
+        <strong class="stat-text">{{ user.email|default:'Not provided' }}</strong>
+        <p>Your profile contact information.</p>
+    </article>
+</section>
+
+<section class="action-panel">
+    <div>
+        <span class="eyebrow">Quick actions</span>
+        <h2>Keep the schedule moving</h2>
+    </div>
+    <div class="action-row">
+        <a class="button button-primary" href="{% url 'create_event' %}">Create Event</a>
+        <a class="button button-secondary" href="{% url 'home' %}">Browse Events</a>
         <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}
-            <button type="submit">Logout</button>
+            <button class="button button-ghost" type="submit">Logout</button>
         </form>
-    </section>
-</body>
-</html>
+    </div>
+</section>
+{% endblock %}

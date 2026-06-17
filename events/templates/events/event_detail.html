@@ -1,42 +1,62 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{ event.title }}</title>
-</head>
-<body>
-    <h1>{{ event.title }}</h1>
-    <p><strong>Category:</strong> {{ event.get_category_display }}</p>
-    <p><strong>Date:</strong> {{ event.date }}</p>
-    <p><strong>Time:</strong> {{ event.time }}</p>
-    <p><strong>Location:</strong> {{ event.location }}</p>
-    <p>{{ event.description }}</p>
-    <p><strong>Organizer:</strong> {{ event.created_by.username|default:'Unknown' }}</p>
+{% extends 'base.html' %}
 
-    {% if user.is_authenticated %}
-        {% if is_registered %}
-            <form method="post" action="{% url 'cancel_registration' event.id %}">
-                {% csrf_token %}
-                <button type="submit">Cancel registration</button>
-            </form>
+{% block title %}{{ event.title }} | Eventory{% endblock %}
+
+{% block content %}
+<section class="detail-layout">
+    <article class="detail-main">
+        <span class="badge">{{ event.get_category_display }}</span>
+        <h1>{{ event.title }}</h1>
+        <p class="lead">{{ event.description }}</p>
+        <div class="detail-meta-grid">
+            <div>
+                <span>Date</span>
+                <strong>{{ event.date }}</strong>
+            </div>
+            <div>
+                <span>Time</span>
+                <strong>{{ event.time }}</strong>
+            </div>
+            <div>
+                <span>Location</span>
+                <strong>{{ event.location }}</strong>
+            </div>
+            <div>
+                <span>Organizer</span>
+                <strong>{{ event.created_by.username|default:'Unknown' }}</strong>
+            </div>
+        </div>
+    </article>
+
+    <aside class="detail-sidebar">
+        <h2>Registration</h2>
+        {% if user.is_authenticated %}
+            {% if is_registered %}
+                <p>You are registered for this event.</p>
+                <form method="post" action="{% url 'cancel_registration' event.id %}">
+                    {% csrf_token %}
+                    <button class="button button-danger" type="submit">Cancel Registration</button>
+                </form>
+            {% else %}
+                <p>Reserve your place and join the participant list.</p>
+                <form method="post" action="{% url 'register_for_event' event.id %}">
+                    {% csrf_token %}
+                    <button class="button button-primary" type="submit">Register for Event</button>
+                </form>
+            {% endif %}
         {% else %}
-            <form method="post" action="{% url 'register_for_event' event.id %}">
-                {% csrf_token %}
-                <button type="submit">Register for this event</button>
-            </form>
+            <p>Login to register for this event.</p>
+            <a class="button button-primary" href="{% url 'login' %}">Login</a>
         {% endif %}
-    {% else %}
-        <p><a href="{% url 'login' %}">Login</a> to register.</p>
-    {% endif %}
 
-    <p><a href="{% url 'event_participants' event.id %}">View registered participants</a></p>
-
-    {% if user == event.created_by %}
-        <p>
-            <a href="{% url 'update_event' event.id %}">Edit event</a> |
-            <a href="{% url 'delete_event' event.id %}">Delete event</a>
-        </p>
-    {% endif %}
-
-    <p><a href="{% url 'home' %}">Back to events</a></p>
-</body>
-</html>
+        <div class="sidebar-links">
+            <a href="{% url 'event_participants' event.id %}">View participants</a>
+            {% if user == event.created_by %}
+                <a href="{% url 'update_event' event.id %}">Edit event</a>
+                <a class="danger-link" href="{% url 'delete_event' event.id %}">Delete event</a>
+            {% endif %}
+            <a href="{% url 'home' %}">Back to events</a>
+        </div>
+    </aside>
+</section>
+{% endblock %}

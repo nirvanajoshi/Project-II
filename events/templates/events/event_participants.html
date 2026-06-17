@@ -1,19 +1,30 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Registered participants</title>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block title %}Participants | Eventory{% endblock %}
+
+{% block content %}
+<section class="page-hero compact">
+    <span class="eyebrow">Guest list</span>
     <h1>Participants for {{ event.title }}</h1>
+    <p>Everyone currently registered for this event appears here.</p>
+</section>
+
+<section class="participants-panel">
     {% if participants %}
-        <ul>
+        <div class="participant-list">
             {% for participant in participants %}
-                <li>{{ participant.username }}</li>
+                <div class="participant-item">
+                    <span class="avatar">{{ participant.username|first|upper }}</span>
+                    <strong>{{ participant.username }}</strong>
+                </div>
             {% endfor %}
-        </ul>
+        </div>
     {% else %}
-        <p>No participants have registered yet.</p>
+        <div class="empty-state">
+            <h3>No participants yet</h3>
+            <p>Registrations will appear here as guests join the event.</p>
+        </div>
     {% endif %}
-    <p><a href="{% url 'event_detail' event.id %}">Back to event</a></p>
-</body>
-</html>
+    <a class="button button-secondary" href="{% url 'event_detail' event.id %}">Back to Event</a>
+</section>
+{% endblock %}

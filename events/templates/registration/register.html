@@ -1,15 +1,20 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Register</title>
-</head>
-<body>
-    <h2>Create an Account</h2>
-    <form method="post">
+{% extends 'base.html' %}
+
+{% block title %}Register | Eventory{% endblock %}
+
+{% block content %}
+<section class="auth-layout">
+    <div class="auth-copy">
+        <span class="eyebrow">Join Eventory</span>
+        <h1>Create an account for smarter event planning.</h1>
+        <p>Start organizing polished event listings and keep track of your registrations.</p>
+    </div>
+    <form class="panel-form auth-card" method="post">
         {% csrf_token %}
+        <h2>Create Account</h2>
         {{ form.as_p }}
-        <button type="submit">Register</button>
+        <button class="button button-primary full-width" type="submit">Register</button>
+        <p class="form-note">Already have an account? <a href="{% url 'login' %}">Login here</a></p>
     </form>
-    <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
-</body>
-</html>
+</section>
+{% endblock %}

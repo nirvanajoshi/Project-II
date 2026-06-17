@@ -1,15 +1,16 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Delete event</title>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block title %}Delete Event | Eventory{% endblock %}
+
+{% block content %}
+<section class="confirm-panel">
+    <span class="eyebrow">Confirm deletion</span>
     <h1>Delete event</h1>
-    <p>Are you sure you want to delete "{{ event.title }}"?</p>
-    <form method="post">
+    <p>Are you sure you want to delete <strong>{{ event.title }}</strong>? This action will remove it from the event list.</p>
+    <form method="post" class="form-actions">
         {% csrf_token %}
-        <button type="submit">Yes, delete</button>
+        <button class="button button-danger" type="submit">Yes, Delete</button>
+        <a class="button button-secondary" href="{% url 'event_detail' event.id %}">Cancel</a>
     </form>
-    <p><a href="{% url 'event_detail' event.id %}">Cancel</a></p>
-</body>
-</html>
+</section>
+{% endblock %}

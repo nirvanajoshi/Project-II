@@ -1,15 +1,22 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{ action }}</title>
-</head>
-<body>
-    <h1>{{ action }}</h1>
-    <form method="post">
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} | Eventory{% endblock %}
+
+{% block content %}
+<section class="form-layout">
+    <div class="form-intro">
+        <span class="eyebrow">Event studio</span>
+        <h1>{{ action }}</h1>
+        <p>Shape the essential details guests need before they commit their time.</p>
+    </div>
+
+    <form class="panel-form" method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Save</button>
+        <div class="form-actions">
+            <button class="button button-primary" type="submit">Save Event</button>
+            <a class="button button-secondary" href="{% url 'home' %}">Back to Events</a>
+        </div>
     </form>
-    <p><a href="{% url 'home' %}">Back to event list</a></p>
-</body>
-</html>
+</section>
+{% endblock %}
