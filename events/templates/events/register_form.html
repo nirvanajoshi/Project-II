@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Register for {{ event.title }}</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+      }
+      form {
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+      }
+      input[type="text"],
+      input[type="email"],
+      input[type="tel"],
+      textarea {
+        width: 100%;
+        padding: 8px;
+        margin: 5px 0 15px 0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 10px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      a {
+        color: #0066cc;
+        text-decoration: none;
+      }
+      .form-group label {
+        display: block;
+        font-weight: bold;
+        margin-top: 10px;
+      }
+      .capacity-info {
+        background-color: #e7f3ff;
+        border-left: 4px solid #2196F3;
+        padding: 10px;
+        margin: 15px 0;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Register for {{ event.title }}</h1>
+    
+    {% if event.max_participants %}
+    <div class="capacity-info">
+      <strong>Capacity Information:</strong><br>
+      Maximum Participants: {{ event.max_participants }}<br>
+      Currently Registered: {{ event.participants.count }}<br>
+      Available Spots: {{ event.get_available_spots }}
+    </div>
+    {% endif %}
+    
+    <form method="post">
+      {% csrf_token %} 
+      {{ form.as_p }}
+      <button type="submit">Submit Registration</button>
+      <a href="{% url 'event_detail' event.id %}"><button type="button">Cancel</button></a>
+    </form>
+  </body>
+</html>
