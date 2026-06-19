@@ -1,74 +1,30 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Registered participants</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        max-width: 900px;
-        margin: 20px auto;
-        padding: 20px;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-      }
-      th, td {
-        border: 1px solid #ddd;
-        padding: 12px;
-        text-align: left;
-      }
-      th {
-        background-color: #f2f2f2;
-        font-weight: bold;
-      }
-      tr:nth-child(even) {
-        background-color: #f9f9f9;
-      }
-      .organizer-only {
-        background-color: #fff3cd;
-        border: 1px solid #ffc107;
-        color: #856404;
-        padding: 12px;
-        border-radius: 4px;
-        margin-bottom: 15px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="organizer-only">
-      <strong>⚠️ Organizer Only:</strong> This page shows detailed participant information and is only visible to the event organizer.
-    </div>
+{% extends 'base.html' %}
 
+{% block title %}Participants | Eventory{% endblock %}
+
+{% block content %}
+<section class="page-hero compact">
+    <span class="eyebrow">Guest list</span>
     <h1>Participants for {{ event.title }}</h1>
-    {% if registrations %}
-    <p><strong>Total Participants: {{ registrations.count }}</strong></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Phone</th>
-          <th>Address</th>
-          <th>Registered At</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for reg in registrations %}
-        <tr>
-          <td>{{ reg.full_name|default:reg.user.username }}</td>
-          <td>{{ reg.email|default:reg.user.email }}</td>
-          <td>{{ reg.phone|default:"-" }}</td>
-          <td>{{ reg.address|default:"-" }}</td>
-          <td>{{ reg.registered_at|date:"M d, Y H:i" }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <p>Everyone currently registered for this event appears here.</p>
+</section>
+
+<section class="participants-panel">
+    {% if participants %}
+        <div class="participant-list">
+            {% for participant in participants %}
+                <div class="participant-item">
+                    <span class="avatar">{{ participant.username|first|upper }}</span>
+                    <strong>{{ participant.username }}</strong>
+                </div>
+            {% endfor %}
+        </div>
     {% else %}
-    <p>No participants have registered yet.</p>
+        <div class="empty-state">
+            <h3>No participants yet</h3>
+            <p>Registrations will appear here as guests join the event.</p>
+        </div>
     {% endif %}
-    <p><a href="{% url 'event_detail' event.id %}">Back to event</a></p>
-  </body>
-</html>
+    <a class="button button-secondary" href="{% url 'event_detail' event.id %}">Back to Event</a>
+</section>
+{% endblock %}

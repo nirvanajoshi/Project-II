@@ -1,102 +1,62 @@
-<!doctype html>
-<html>
-  <head>
-    <title>{{ event.title }}</title>
-    <style>
-      .success-message {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-        color: #155724;
-        padding: 12px;
-        border-radius: 4px;
-        margin-bottom: 15px;
-      }
-      .info-box {
-        background-color: #e7f3ff;
-        border-left: 4px solid #2196F3;
-        padding: 10px;
-        margin: 10px 0;
-      }
-    </style>
-  </head>
-  <body>
-    {% if messages %}
-    <div>
-      {% for message in messages %}
-      <div class="success-message">
-        {{ message }}
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
+{% extends 'base.html' %}
 
-    <h1>{{ event.title }}</h1>
-    <p><strong>Category:</strong> {{ event.get_category_display }}</p>
-    <p><strong>Date:</strong> {{ event.date }}</p>
-    <p><strong>Time:</strong> {{ event.time }}</p>
-    <p><strong>Location:</strong> {{ event.location }}</p>
-    <p>{{ event.description }}</p>
-    <p>
-      <strong>Organizer:</strong> {{ event.created_by.username|default:"Unknown" }}
-    </p>
-    
-    <div class="info-box">
-      <strong>Total Participants:</strong> {{ participant_count }}
-      {% if event.max_participants %}
-        <br><strong>Participant Limit:</strong> {{ event.max_participants }}
-        <br><strong>Available Spots:</strong> 
-        {% if available_spots > 0 %}
-          <span style="color: green;">{{ available_spots }} spots available</span>
-        {% else %}
-          <span style="color: red; font-weight: bold;">🔴 EVENT FULL - No spots available</span>
-        {% endif %}
-      {% else %}
-        <br><span style="color: green;">Unlimited participants</span>
-      {% endif %}
-    </div>
+{% block title %}{{ event.title }} | Eventory{% endblock %}
 
-    {% if user.is_authenticated %} {% if is_registered %}
-    <form method="post" action="{% url 'cancel_registration' event.id %}">
-      {% csrf_token %}
-      <button type="submit">Cancel registration</button>
-    </form>
-    {% else %}
-      {% if is_full %}
-        <div style="background-color: #ffcccc; border: 2px solid #cc0000; padding: 15px; border-radius: 4px; margin: 15px 0;">
-          <strong style="color: #cc0000; font-size: 18px;">❌ EVENT FULL</strong>
-          <p>Unfortunately, this event has reached the maximum number of participants and registration is no longer available.</p>
+{% block content %}
+<section class="detail-layout">
+    <article class="detail-main">
+        <span class="badge">{{ event.get_category_display }}</span>
+        <h1>{{ event.title }}</h1>
+        <p class="lead">{{ event.description }}</p>
+        <div class="detail-meta-grid">
+            <div>
+                <span>Date</span>
+                <strong>{{ event.date }}</strong>
+            </div>
+            <div>
+                <span>Time</span>
+                <strong>{{ event.time }}</strong>
+            </div>
+            <div>
+                <span>Location</span>
+                <strong>{{ event.location }}</strong>
+            </div>
+            <div>
+                <span>Organizer</span>
+                <strong>{{ event.created_by.username|default:'Unknown' }}</strong>
+            </div>
         </div>
-      {% else %}
-        <button id="register-btn">Register for this event</button>
-        <script>
-          document
-            .getElementById("register-btn")
-            .addEventListener("click", function () {
-              if (confirm("Do you want to register for this event?")) {
-                window.location.href = "{% url 'register_for_event' event.id %}";
-              }
-            });
-        </script>
-      {% endif %}
-    {% endif %} {% else %}
-    <p><a href="{% url 'login' %}">Login</a> to register.</p>
-    {% endif %}
+    </article>
 
-    {% if user == event.created_by %}
-    <p>
-      <a href="{% url 'event_participants' event.id %}"
-        >View registered participants</a
-      >
-    </p>
-    {% endif %}
+    <aside class="detail-sidebar">
+        <h2>Registration</h2>
+        {% if user.is_authenticated %}
+            {% if is_registered %}
+                <p>You are registered for this event.</p>
+                <form method="post" action="{% url 'cancel_registration' event.id %}">
+                    {% csrf_token %}
+                    <button class="button button-danger" type="submit">Cancel Registration</button>
+                </form>
+            {% else %}
+                <p>Reserve your place and join the participant list.</p>
+                <form method="post" action="{% url 'register_for_event' event.id %}">
+                    {% csrf_token %}
+                    <button class="button button-primary" type="submit">Register for Event</button>
+                </form>
+            {% endif %}
+        {% else %}
+            <p>Login to register for this event.</p>
+            <a class="button button-primary" href="{% url 'login' %}">Login</a>
+        {% endif %}
 
-    {% if user == event.created_by %}
-    <p>
-      <a href="{% url 'update_event' event.id %}">Edit event</a> |
-      <a href="{% url 'delete_event' event.id %}">Delete event</a>
-    </p>
-    {% endif %}
-
-    <p><a href="{% url 'home' %}">Back to events</a></p>
-  </body>
-</html>
+        <div class="sidebar-links">
+            <a href="{% url 'event_participants' event.id %}">View participants</a>
+            {% if user == event.created_by %}
+                <a href="{% url 'update_event' event.id %}">Edit event</a>
+                <a class="danger-link" href="{% url 'delete_event' event.id %}">Delete event</a>
+            {% endif %}
+            <a href="{% url 'home' %}">Back to events</a>
+        </div>
+    </aside>
+</section>
+{% endblock %}

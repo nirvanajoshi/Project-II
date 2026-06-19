@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Event Management System{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'events/css/styles.css' %}?v=full-blue-bg-20260619">
+</head>
+<body>
+    <div class="site-shell">
+        <header class="site-header">
+            <a class="brand" href="{% url 'home' %}">
+                <span>
+                    <strong>Eventory</strong>
+                    <small>Event Management</small>
+                </span>
+            </a>
+
+            <nav class="nav-links" aria-label="Primary navigation">
+                <a href="{% url 'home' %}">Events</a>
+                {% if user.is_authenticated %}
+                    <span class="user-greeting">Welcome back, <strong>{{ user.username }}</strong></span>
+                    <a href="{% url 'dashboard' %}">Dashboard</a>
+                    <a class="nav-cta" href="{% url 'create_event' %}">Create Event</a>
+                    <form method="post" action="{% url 'logout' %}" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}">Login</a>
+                    <a class="nav-cta" href="{% url 'register' %}">Register</a>
+                {% endif %}
+            </nav>
+        </header>
+
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>
