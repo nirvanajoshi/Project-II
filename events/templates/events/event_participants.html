@@ -10,12 +10,12 @@
 </section>
 
 <section class="participants-panel">
-    {% if participants %}
+    {% if registrations %}
         <div class="participant-list">
-            {% for participant in participants %}
+            {% for registration in registrations %}
                 <div class="participant-item">
-                    <span class="avatar">{{ participant.username|first|upper }}</span>
-                    <strong>{{ participant.username }}</strong>
+                    <span class="avatar">{{ registration.user.username|first|upper }}</span>
+                    <strong>{{ registration.user.username }}</strong>
                 </div>
             {% endfor %}
         </div>
