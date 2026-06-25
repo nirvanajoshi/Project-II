@@ -30,6 +30,7 @@ class Event(models.Model):
         on_delete=models.SET_NULL,
         related_name='created_events'
     )
+    approved = models.BooleanField(default=False)
     participants = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         through='Registration',

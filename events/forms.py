@@ -37,3 +37,16 @@ class RegistrationForm(forms.ModelForm):
     class Meta:
         model = Registration
         fields = ['full_name', 'email', 'phone', 'address']
+        widgets = {
+            'full_name': forms.TextInput(attrs={'placeholder': 'Your full name'}),
+            'phone': forms.TextInput(attrs={'placeholder': 'Your phone number'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'Your email address'}),
+            'address': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Your address (optional)'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['full_name'].required = True
+        self.fields['phone'].required = True
+        self.fields['email'].required = False
+        self.fields['address'].required = False

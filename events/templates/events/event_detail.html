@@ -1,67 +1,83 @@
-{% extends 'base.html' %}
-
-{% block title %}{{ event.title }} | Eventory{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% block title %}{{ event.title }} | Eventory{%
+endblock %} {% block content %}
 <section class="detail-layout">
-    <article class="detail-main">
-        <span class="badge">{{ event.get_category_display }}</span>
-        <h1>{{ event.title }}</h1>
-        <p class="lead">{{ event.description }}</p>
-        <div class="detail-meta-grid">
-            <div>
-                <span>Date</span>
-                <strong>{{ event.date }}</strong>
-            </div>
-            <div>
-                <span>Time</span>
-                <strong>{{ event.time }}</strong>
-            </div>
-            <div>
-                <span>Location</span>
-                <strong>{{ event.location }}</strong>
-            </div>
-            <div>
-                <span>Organizer</span>
-                <strong>{{ event.created_by.username|default:'Unknown' }}</strong>
-            </div>
-        </div>
-    </article>
+  <article class="detail-main">
+    <span class="badge">{{ event.get_category_display }}</span>
+    <h1>{{ event.title }}</h1>
+    <p class="lead">{{ event.description }}</p>
+    <div class="detail-meta-grid">
+      <div>
+        <span>Date</span>
+        <strong>{{ event.date }}</strong>
+      </div>
+      <div>
+        <span>Time</span>
+        <strong>{{ event.time }}</strong>
+      </div>
+      <div>
+        <span>Location</span>
+        <strong>{{ event.location }}</strong>
+      </div>
+      <div>
+        <span>Organizer</span>
+        <strong>{{ event.created_by.username|default:'Unknown' }}</strong>
+      </div>
+      <div>
+        <span>Status</span>
+        <strong
+          >{% if event.approved %}Approved{% else %}Pending approval{% endif
+          %}</strong
+        >
+      </div>
+    </div>
+  </article>
 
-    <aside class="detail-sidebar">
-        <h2>Registration</h2>
-        <!-- Show different registration actions depending on login status. -->
-        {% if user.is_authenticated %}
-            {% if is_registered %}
-                <!-- If the user already registered, they can cancel registration. -->
-                <p>You are registered for this event.</p>
-                <form method="post" action="{% url 'cancel_registration' event.id %}">
-                    {% csrf_token %}
-                    <button class="button button-danger" type="submit">Cancel Registration</button>
-                </form>
-            {% else %}
-                <!-- If the user is logged in but not registered, show register button. -->
-                <p>Reserve your place and join the participant list.</p>
-                <form method="post" action="{% url 'register_for_event' event.id %}">
-                    {% csrf_token %}
-                    <button class="button button-primary" type="submit">Register for Event</button>
-                </form>
-            {% endif %}
-        {% else %}
-            <!-- If not logged in, prompt the user to login first. -->
-            <p>Login to register for this event.</p>
-            <a class="button button-primary" href="{% url 'login' %}">Login</a>
-        {% endif %}
+  <aside class="detail-sidebar">
+    <h2>Registration</h2>
+    {% if not event.approved %}
+    <div class="pending-notice">
+      <strong>Pending approval:</strong> This event is awaiting admin approval
+      before registration opens.
+    </div>
+    {% endif %}
+    <!-- Show different registration actions depending on login status. -->
+    {% if user.is_authenticated %} {% if is_registered %}
+    <!-- If the user already registered, they can cancel registration. -->
+    <p>You are registered for this event.</p>
+    <form method="post" action="{% url 'cancel_registration' event.id %}">
+      {% csrf_token %}
+      <button class="button button-danger" type="submit">
+        Cancel Registration
+      </button>
+    </form>
+    {% elif event.approved %}
+    <!-- If the user is logged in but not registered, show register button. -->
+    <p>Reserve your place and join the participant list.</p>
+    <form method="post" action="{% url 'register_for_event' event.id %}">
+      {% csrf_token %}
+      <button class="button button-primary" type="submit">
+        Register for Event
+      </button>
+    </form>
+    {% else %}
+    <p>Registration opens after admin approval.</p>
+    {% endif %} {% else %}
+    <!-- If not logged in, prompt the user to login first. -->
+    <p>Login to register for this event.</p>
+    <a class="button button-primary" href="{% url 'login' %}">Login</a>
+    {% endif %}
 
-        <div class="sidebar-links">
-            <!-- Links for event actions like viewing participants or editing event. -->
-            <a href="{% url 'event_participants' event.id %}">View participants</a>
-            {% if user == event.created_by %}
-                <a href="{% url 'update_event' event.id %}">Edit event</a>
-                <a class="danger-link" href="{% url 'delete_event' event.id %}">Delete event</a>
-            {% endif %}
-            <a href="{% url 'home' %}">Back to events</a>
-        </div>
-    </aside>
+    <div class="sidebar-links">
+      <!-- Links for event actions like viewing participants or editing event. -->
+      <a href="{% url 'event_participants' event.id %}">View participants</a>
+      {% if user == event.created_by %}
+      <a href="{% url 'update_event' event.id %}">Edit event</a>
+      <a class="danger-link" href="{% url 'delete_event' event.id %}"
+        >Delete event</a
+      >
+      {% endif %}
+      <a href="{% url 'home' %}">Back to events</a>
+    </div>
+  </aside>
 </section>
 {% endblock %}

@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
+from django.contrib import messages
 
 from .models import Event, Registration
 from .forms import EventForm
@@ -84,8 +85,10 @@ def create_event(request):
         if form.is_valid():
             event = form.save(commit=False)
             event.created_by = request.user
+            event.approved = False
             event.save()
             form.save_m2m()
+            messages.success(request, 'Event created and is pending admin approval.')
             return redirect('event_detail', event_id=event.id)
     else:
         form = EventForm()
@@ -216,9 +219,14 @@ def update_event(request, event_id):
     if event.created_by and event.created_by != request.user:
         return redirect('event_detail', event_id=event.id)
 
+    if event.approved:
+        messages.error(request, 'This event has already been approved and cannot be edited here. Please contact an admin for changes.')
+        return redirect('event_detail', event_id=event.id)
+
     form = EventForm(request.POST or None, instance=event)
     if form.is_valid():
         form.save()
+        messages.success(request, 'Event updated. It will remain pending approval until an admin approves it.')
         return redirect('event_detail', event_id=event.id)
     return render(request, 'events/event_form.html', {'form': form, 'action': 'Update Event', 'event': event})
 
@@ -248,6 +256,10 @@ def register_for_event(request, event_id):
     if event.is_full() and not event.is_registered(request.user):
         # Prevent registration when event has no available seats.
         messages.error(request, f'Sorry! {event.title} has reached the maximum number of participants.')
+        return redirect('event_detail', event_id=event.id)
+
+    if not event.approved:
+        messages.error(request, 'This event is pending admin approval. Registration is not available yet.')
         return redirect('event_detail', event_id=event.id)
 
     if request.method == 'POST':

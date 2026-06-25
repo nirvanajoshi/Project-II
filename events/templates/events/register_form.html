@@ -27,7 +27,7 @@
         box-sizing: border-box;
       }
       button {
-        background-color: #4CAF50;
+        background-color: #4caf50;
         color: white;
         padding: 10px 20px;
         border: none;
@@ -49,7 +49,7 @@
       }
       .capacity-info {
         background-color: #e7f3ff;
-        border-left: 4px solid #2196F3;
+        border-left: 4px solid #2196f3;
         padding: 10px;
         margin: 15px 0;
         border-radius: 4px;
@@ -58,21 +58,34 @@
   </head>
   <body>
     <h1>Register for {{ event.title }}</h1>
-    
+
     {% if event.max_participants %}
     <div class="capacity-info">
-      <strong>Capacity Information:</strong><br>
-      Maximum Participants: {{ event.max_participants }}<br>
-      Currently Registered: {{ event.participants.count }}<br>
+      <strong>Capacity Information:</strong><br />
+      Maximum Participants: {{ event.max_participants }}<br />
+      Currently Registered: {{ event.participants.count }}<br />
       Available Spots: {{ event.get_available_spots }}
     </div>
     {% endif %}
-    
-    <form method="post">
-      {% csrf_token %} 
-      {{ form.as_p }}
+
+    <form method="post" id="registration-form">
+      {% csrf_token %} {{ form.as_p }}
       <button type="submit">Submit Registration</button>
-      <a href="{% url 'event_detail' event.id %}"><button type="button">Cancel</button></a>
+      <a href="{% url 'event_detail' event.id %}"
+        ><button type="button">Cancel</button></a
+      >
     </form>
+    <script>
+      document
+        .getElementById("registration-form")
+        .addEventListener("submit", function (event) {
+          var confirmRegister = window.confirm(
+            "Are you sure you want to participate in this event?",
+          );
+          if (!confirmRegister) {
+            event.preventDefault();
+          }
+        });
+    </script>
   </body>
 </html>
