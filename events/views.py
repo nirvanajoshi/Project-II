@@ -2,6 +2,7 @@
 # Each function here is a view that returns an HTML page or performs an action.
 from django.db.models import Q, Sum
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
@@ -13,24 +14,48 @@ from .forms import EventForm
 
 def home(request):
     # Render the main event listing page with search and filter support.
+    now = timezone.now().date()
     events = Event.objects.order_by('date', 'time')
+
+    if request.user.is_staff:
+        # Admin can see all host events, but upcoming schedule should still show only approved events.
+        host_events = events.filter(created_by=request.user).order_by('date', 'time') if request.user.is_authenticated else None
+        upcoming_events = events.filter(approved=True, canceled=False, date__gte=now).order_by('date', 'time')
+    elif request.user.is_authenticated:
+        # Logged-in users can see approved upcoming events and their own host events.
+        host_events = events.filter(created_by=request.user).order_by('date', 'time')
+        upcoming_events = events.filter(approved=True, canceled=False, date__gte=now).order_by('date', 'time')
+    else:
+        # Anonymous users only see approved upcoming events.
+        host_events = None
+        upcoming_events = events.filter(approved=True, canceled=False, date__gte=now).order_by('date', 'time')
+
     query = request.GET.get('q', '').strip()
     category = request.GET.get('category', '').strip()
 
     if query:
         # If the user searched for a keyword, filter the events by title, description, or location.
-        events = events.filter(
+        upcoming_events = upcoming_events.filter(
             Q(title__icontains=query)
             | Q(description__icontains=query)
             | Q(location__icontains=query)
         )
+        if host_events is not None:
+            host_events = host_events.filter(
+                Q(title__icontains=query)
+                | Q(description__icontains=query)
+                | Q(location__icontains=query)
+            )
 
     if category:
         # If the user selected a category, filter events by that category.
-        events = events.filter(category=category)
+        upcoming_events = upcoming_events.filter(category=category)
+        if host_events is not None:
+            host_events = host_events.filter(category=category)
 
     context = {
-        'events': events,
+        'events': upcoming_events,
+        'host_events': host_events,
         'query': query,
         'selected_category': category,
         'categories': Event.CATEGORY_CHOICES,
@@ -92,12 +117,19 @@ def create_event(request):
             return redirect('event_detail', event_id=event.id)
     else:
         form = EventForm()
-    return render(request, 'events/event_form.html', {'form': form, 'action': 'Create Event'})
+    return render(request, 'events/event_form.html', {'form': form, 'action': 'Create Event', 'event': None})
 
 
 def event_detail(request, event_id):
     # Show detail page for a single event.
     event = get_object_or_404(Event, pk=event_id)
+    if event.canceled and request.user != event.created_by and not request.user.is_staff:
+        messages.error(request, 'This event has been canceled and is not available.')
+        return redirect('home')
+    if not event.approved and request.user != event.created_by and not request.user.is_staff:
+        messages.error(request, 'This event is pending admin approval and is not visible yet.')
+        return redirect('home')
+
     is_registered = request.user.is_authenticated and event.is_registered(request.user)
     participant_count = event.participants.count()
     is_full = event.is_full()
@@ -219,14 +251,18 @@ def update_event(request, event_id):
     if event.created_by and event.created_by != request.user:
         return redirect('event_detail', event_id=event.id)
 
-    if event.approved:
+    if event.approved and not request.user.is_staff:
         messages.error(request, 'This event has already been approved and cannot be edited here. Please contact an admin for changes.')
         return redirect('event_detail', event_id=event.id)
 
     form = EventForm(request.POST or None, instance=event)
     if form.is_valid():
-        form.save()
-        messages.success(request, 'Event updated. It will remain pending approval until an admin approves it.')
+        event = form.save(commit=False)
+        if not request.user.is_staff:
+            event.approved = False
+        event.save()
+        form.save_m2m()
+        messages.success(request, 'Event updated. It will remain pending approval until an admin approves it.' if not request.user.is_staff else 'Event updated.')
         return redirect('event_detail', event_id=event.id)
     return render(request, 'events/event_form.html', {'form': form, 'action': 'Update Event', 'event': event})
 
@@ -252,6 +288,10 @@ def register_for_event(request, event_id):
     from django.contrib import messages
 
     event = get_object_or_404(Event, pk=event_id)
+
+    if event.canceled:
+        messages.error(request, 'This event has been canceled and registration is closed.')
+        return redirect('event_detail', event_id=event.id)
 
     if event.is_full() and not event.is_registered(request.user):
         # Prevent registration when event has no available seats.

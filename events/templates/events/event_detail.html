@@ -1,5 +1,6 @@
-{% extends 'base.html' %} {% block title %}{{ event.title }} | Eventory{%
-endblock %} {% block content %}
+{% extends 'base.html' %}
+{% block title %}{{ event.title }} | Eventory{% endblock %}
+{% block content %}
 <section class="detail-layout">
   <article class="detail-main">
     <span class="badge">{{ event.get_category_display }}</span>
@@ -24,60 +25,111 @@ endblock %} {% block content %}
       </div>
       <div>
         <span>Status</span>
-        <strong
-          >{% if event.approved %}Approved{% else %}Pending approval{% endif
-          %}</strong
-        >
+        <strong>
+          {% if event.canceled %}
+            Canceled
+          {% elif event.approved %}
+            Approved
+          {% else %}
+            Pending approval
+          {% endif %}
+        </strong>
       </div>
     </div>
   </article>
 
   <aside class="detail-sidebar">
     <h2>Registration</h2>
-    {% if not event.approved %}
+    {% if event.canceled %}
+    <div class="pending-notice">
+      <strong>Event canceled:</strong> This event has been canceled and registration is closed.
+    </div>
+    {% elif not event.approved %}
     <div class="pending-notice">
       <strong>Pending approval:</strong> This event is awaiting admin approval
       before registration opens.
     </div>
     {% endif %}
-    <!-- Show different registration actions depending on login status. -->
-    {% if user.is_authenticated %} {% if is_registered %}
-    <!-- If the user already registered, they can cancel registration. -->
-    <p>You are registered for this event.</p>
-    <form method="post" action="{% url 'cancel_registration' event.id %}">
-      {% csrf_token %}
-      <button class="button button-danger" type="submit">
-        Cancel Registration
-      </button>
-    </form>
-    {% elif event.approved %}
-    <!-- If the user is logged in but not registered, show register button. -->
-    <p>Reserve your place and join the participant list.</p>
-    <form method="post" action="{% url 'register_for_event' event.id %}">
-      {% csrf_token %}
-      <button class="button button-primary" type="submit">
-        Register for Event
-      </button>
-    </form>
+    {% if not event.approved and request.user != event.created_by and not request.user.is_staff %}
+    <div class="alert alert-warning">
+      This event is pending admin approval and is not visible to other users yet.
+    </div>
+    {% endif %}
+    {% if user.is_authenticated %}
+      {% if is_registered %}
+      <p>You are registered for this event.</p>
+      <form method="post" action="{% url 'cancel_registration' event.id %}">
+        {% csrf_token %}
+        <button class="button button-danger" type="submit">
+          Cancel Registration
+        </button>
+      </form>
+      {% elif event.approved and not event.canceled %}
+      <p>Reserve your place and join the participant list.</p>
+      <form method="post" action="{% url 'register_for_event' event.id %}">
+        {% csrf_token %}
+        <button class="button button-primary" type="submit">
+          Register for Event
+        </button>
+      </form>
+      {% elif event.canceled %}
+      <p>This event has been canceled and registration is closed.</p>
+      {% else %}
+      <p>Registration opens after admin approval.</p>
+      {% endif %}
     {% else %}
-    <p>Registration opens after admin approval.</p>
-    {% endif %} {% else %}
-    <!-- If not logged in, prompt the user to login first. -->
     <p>Login to register for this event.</p>
     <a class="button button-primary" href="{% url 'login' %}">Login</a>
     {% endif %}
 
     <div class="sidebar-links">
-      <!-- Links for event actions like viewing participants or editing event. -->
       <a href="{% url 'event_participants' event.id %}">View participants</a>
       {% if user == event.created_by %}
       <a href="{% url 'update_event' event.id %}">Edit event</a>
-      <a class="danger-link" href="{% url 'delete_event' event.id %}"
-        >Delete event</a
-      >
+      <button class="button button-danger" type="button" id="open-delete-modal">Delete event</button>
       {% endif %}
       <a href="{% url 'home' %}">Back to events</a>
     </div>
   </aside>
 </section>
+
+<div class="modal-backdrop" id="delete-confirm-modal" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+        <button class="modal-close" type="button" aria-label="Close confirmation dialog">×</button>
+        <span class="eyebrow">Confirm deletion</span>
+        <h2 id="delete-modal-title">Delete this event?</h2>
+        <p>Are you sure you want to delete <strong>{{ event.title }}</strong>? This action cannot be undone.</p>
+        <form method="post" action="{% url 'delete_event' event.id %}" class="modal-actions">
+            {% csrf_token %}
+            <button class="button button-danger" type="submit">Yes, delete</button>
+            <button class="button button-secondary" type="button" id="delete-cancel">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const deleteModal = document.getElementById('delete-confirm-modal');
+    const openDeleteButton = document.getElementById('open-delete-modal');
+    const closeDeleteButton = document.getElementById('delete-cancel');
+    const deleteModalClose = deleteModal.querySelector('.modal-close');
+
+    function openDeleteModal() {
+        deleteModal.classList.add('visible');
+        deleteModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeDeleteModal() {
+        deleteModal.classList.remove('visible');
+        deleteModal.setAttribute('aria-hidden', 'true');
+    }
+
+    openDeleteButton.addEventListener('click', openDeleteModal);
+    closeDeleteButton.addEventListener('click', closeDeleteModal);
+    deleteModalClose.addEventListener('click', closeDeleteModal);
+    deleteModal.addEventListener('click', function (event) {
+        if (event.target === deleteModal) {
+            closeDeleteModal();
+        }
+    });
+</script>
 {% endblock %}

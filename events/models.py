@@ -31,6 +31,7 @@ class Event(models.Model):
         related_name='created_events'
     )
     approved = models.BooleanField(default=False)
+    canceled = models.BooleanField(default=False)
     participants = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         through='Registration',

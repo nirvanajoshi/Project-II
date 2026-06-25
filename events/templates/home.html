@@ -40,7 +40,6 @@
         <span class="eyebrow">Find your moment</span>
         <h2>Search events</h2>
     </div>
-    <!-- Search form lets users filter events by keyword and category. -->
     <form class="search-form" id="live-search-form" method="get" action="{% url 'home' %}">
         <label>
             <span>Keyword</span>
@@ -59,6 +58,18 @@
     </form>
 </section>
 
+{% if host_events %}
+<section class="content-section">
+    <div class="section-heading section-heading-row">
+        <div>
+            <span class="eyebrow">Host-created</span>
+            <h2>Your events</h2>
+        </div>
+    </div>
+    {% include 'events/_event_list.html' with events=host_events %}
+</section>
+{% endif %}
+
 <section class="content-section">
     <div class="section-heading section-heading-row">
         <div>
@@ -69,7 +80,6 @@
             <a class="text-link" href="{% url 'create_event' %}">Create a new event</a>
         {% endif %}
     </div>
-
     <div id="event-results" data-target-url="{% url 'home' %}">
         {% include 'events/_event_list.html' %}
     </div>

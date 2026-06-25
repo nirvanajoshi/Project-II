@@ -1,91 +1,79 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Register for {{ event.title }}</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        max-width: 600px;
-        margin: 50px auto;
-        padding: 20px;
-      }
-      form {
-        background: #f9f9f9;
-        padding: 20px;
-        border-radius: 5px;
-        border: 1px solid #ddd;
-      }
-      input[type="text"],
-      input[type="email"],
-      input[type="tel"],
-      textarea {
-        width: 100%;
-        padding: 8px;
-        margin: 5px 0 15px 0;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-sizing: border-box;
-      }
-      button {
-        background-color: #4caf50;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-right: 10px;
-      }
-      button:hover {
-        background-color: #45a049;
-      }
-      a {
-        color: #0066cc;
-        text-decoration: none;
-      }
-      .form-group label {
-        display: block;
-        font-weight: bold;
-        margin-top: 10px;
-      }
-      .capacity-info {
-        background-color: #e7f3ff;
-        border-left: 4px solid #2196f3;
-        padding: 10px;
-        margin: 15px 0;
-        border-radius: 4px;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Register for {{ event.title }}</h1>
+{% extends 'base.html' %}
 
-    {% if event.max_participants %}
-    <div class="capacity-info">
-      <strong>Capacity Information:</strong><br />
-      Maximum Participants: {{ event.max_participants }}<br />
-      Currently Registered: {{ event.participants.count }}<br />
-      Available Spots: {{ event.get_available_spots }}
+{% block title %}Register for {{ event.title }} | Eventory{% endblock %}
+
+{% block content %}
+<section class="form-layout">
+    <div class="form-intro">
+        <span class="eyebrow">Event registration</span>
+        <h1>Register for {{ event.title }}</h1>
+        <p>Confirm your contact details so the organizer can keep you updated before the event.</p>
+
+        {% if event.max_participants %}
+            <div class="capacity-info">
+                <span>Capacity</span>
+                <strong>{{ event.get_available_spots }} spots available</strong>
+                <p>{{ event.participants.count }} of {{ event.max_participants }} places are already reserved.</p>
+            </div>
+        {% endif %}
     </div>
-    {% endif %}
 
-    <form method="post" id="registration-form">
-      {% csrf_token %} {{ form.as_p }}
-      <button type="submit">Submit Registration</button>
-      <a href="{% url 'event_detail' event.id %}"
-        ><button type="button">Cancel</button></a
-      >
+    <form class="panel-form" method="post" id="registration-form">
+        {% csrf_token %}
+        <h2>Your details</h2>
+        {{ form.as_p }}
+        <div class="form-actions">
+            <button class="button button-primary" id="registration-submit" type="button">Submit Registration</button>
+            <a class="button button-secondary" href="{% url 'event_detail' event.id %}">Cancel</a>
+        </div>
     </form>
-    <script>
-      document
-        .getElementById("registration-form")
-        .addEventListener("submit", function (event) {
-          var confirmRegister = window.confirm(
-            "Are you sure you want to participate in this event?",
-          );
-          if (!confirmRegister) {
-            event.preventDefault();
-          }
-        });
-    </script>
-  </body>
-</html>
+</section>
+
+<div class="modal-backdrop" id="registration-confirm-modal" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="registration-modal-title">
+        <button class="modal-close" type="button" aria-label="Close confirmation dialog">×</button>
+        <span class="eyebrow">Confirm registration</span>
+        <h2 id="registration-modal-title">Are you sure?</h2>
+        <p>Do you want to participate in this event?</p>
+        <div class="form-actions modal-actions">
+            <button class="button button-primary" id="confirm-registration" type="button">Yes, register</button>
+            <button class="button button-secondary" id="cancel-registration" type="button">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const registerForm = document.getElementById('registration-form');
+    const registrationSubmit = document.getElementById('registration-submit');
+    const registrationModal = document.getElementById('registration-confirm-modal');
+    const confirmRegistration = document.getElementById('confirm-registration');
+    const cancelRegistration = document.getElementById('cancel-registration');
+    const registrationModalClose = registrationModal.querySelector('.modal-close');
+
+    function openRegistrationModal() {
+        registrationModal.classList.add('visible');
+        registrationModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeRegistrationModal() {
+        registrationModal.classList.remove('visible');
+        registrationModal.setAttribute('aria-hidden', 'true');
+    }
+
+    registrationSubmit.addEventListener('click', function () {
+        openRegistrationModal();
+    });
+
+    confirmRegistration.addEventListener('click', function () {
+        registerForm.submit();
+    });
+
+    cancelRegistration.addEventListener('click', closeRegistrationModal);
+    registrationModalClose.addEventListener('click', closeRegistrationModal);
+    registrationModal.addEventListener('click', function (event) {
+        if (event.target === registrationModal) {
+            closeRegistrationModal();
+        }
+    });
+</script>
+{% endblock %}

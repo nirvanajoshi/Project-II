@@ -8,6 +8,18 @@
         <span class="eyebrow">Event studio</span>
         <h1>{{ action }}</h1>
         <p>Shape the essential details guests need before they commit their time.</p>
+        {% if event %}
+        <div class="event-status">
+            <strong>Status:</strong>
+            {% if event.canceled %}
+                <span class="badge badge-canceled">Canceled</span>
+            {% elif event.approved %}
+                <span class="badge badge-approved">Approved</span>
+            {% else %}
+                <span class="badge badge-pending">Pending approval</span>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 
     <form class="panel-form" method="post">

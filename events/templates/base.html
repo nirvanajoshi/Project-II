@@ -8,14 +8,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'events/css/styles.css' %}?v=full-blue-bg-20260619">
+    <link rel="stylesheet" href="{% static 'events/css/styles.css' %}?v=professional-ui-20260625">
 </head>
 <body>
-    <!-- Main page shell that contains header, content, and footer area. -->
     <div class="site-shell">
         <header class="site-header">
-            <!-- Logo and primary navigation links. -->
             <a class="brand" href="{% url 'home' %}">
+                <span class="brand-mark">E</span>
                 <span>
                     <strong>Eventory</strong>
                     <small>Event Management</small>
@@ -40,8 +39,20 @@
         </header>
 
         <main>
+            {% if messages %}
+                <div class="message-list" role="status" aria-live="polite">
+                    {% for message in messages %}
+                        <div class="message message-{{ message.tags|default:'info' }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
             {% block content %}{% endblock %}
         </main>
+
+        <footer class="site-footer">
+            <span>Eventory</span>
+            <span>Professional event planning and registration.</span>
+        </footer>
     </div>
     <script src="{% static 'events/js/search.js' %}"></script>
 </body>
