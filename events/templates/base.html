@@ -11,8 +11,10 @@
     <link rel="stylesheet" href="{% static 'events/css/styles.css' %}?v=full-blue-bg-20260619">
 </head>
 <body>
+    <!-- Main page shell that contains header, content, and footer area. -->
     <div class="site-shell">
         <header class="site-header">
+            <!-- Logo and primary navigation links. -->
             <a class="brand" href="{% url 'home' %}">
                 <span>
                     <strong>Eventory</strong>
@@ -41,5 +43,6 @@
             {% block content %}{% endblock %}
         </main>
     </div>
+    <script src="{% static 'events/js/search.js' %}"></script>
 </body>
 </html>

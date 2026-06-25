@@ -12,6 +12,7 @@
     <form class="panel-form auth-card" method="post">
         {% csrf_token %}
         <h2>Login</h2>
+        <!-- Django form fields are rendered here as paragraph elements. -->
         {{ form.as_p }}
         <button class="button button-primary full-width" type="submit">Login</button>
         <p class="form-note">Don't have an account? <a href="{% url 'register' %}">Register here</a></p>

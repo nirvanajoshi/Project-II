@@ -30,14 +30,17 @@
 
     <aside class="detail-sidebar">
         <h2>Registration</h2>
+        <!-- Show different registration actions depending on login status. -->
         {% if user.is_authenticated %}
             {% if is_registered %}
+                <!-- If the user already registered, they can cancel registration. -->
                 <p>You are registered for this event.</p>
                 <form method="post" action="{% url 'cancel_registration' event.id %}">
                     {% csrf_token %}
                     <button class="button button-danger" type="submit">Cancel Registration</button>
                 </form>
             {% else %}
+                <!-- If the user is logged in but not registered, show register button. -->
                 <p>Reserve your place and join the participant list.</p>
                 <form method="post" action="{% url 'register_for_event' event.id %}">
                     {% csrf_token %}
@@ -45,11 +48,13 @@
                 </form>
             {% endif %}
         {% else %}
+            <!-- If not logged in, prompt the user to login first. -->
             <p>Login to register for this event.</p>
             <a class="button button-primary" href="{% url 'login' %}">Login</a>
         {% endif %}
 
         <div class="sidebar-links">
+            <!-- Links for event actions like viewing participants or editing event. -->
             <a href="{% url 'event_participants' event.id %}">View participants</a>
             {% if user == event.created_by %}
                 <a href="{% url 'update_event' event.id %}">Edit event</a>

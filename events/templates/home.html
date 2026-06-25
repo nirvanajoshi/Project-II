@@ -40,14 +40,15 @@
         <span class="eyebrow">Find your moment</span>
         <h2>Search events</h2>
     </div>
-    <form class="search-form" method="get" action="{% url 'home' %}">
+    <!-- Search form lets users filter events by keyword and category. -->
+    <form class="search-form" id="live-search-form" method="get" action="{% url 'home' %}">
         <label>
             <span>Keyword</span>
-            <input type="text" name="q" value="{{ query }}" placeholder="Search title, description, location">
+            <input id="search-input" type="text" name="q" value="{{ query }}" placeholder="Search title, description, location">
         </label>
         <label>
             <span>Category</span>
-            <select name="category">
+            <select id="category-select" name="category">
                 <option value="">All categories</option>
                 {% for code,label in categories %}
                     <option value="{{ code }}" {% if code == selected_category %}selected{% endif %}>{{ label }}</option>
@@ -69,29 +70,8 @@
         {% endif %}
     </div>
 
-    {% if events %}
-        <div class="event-grid">
-            {% for event in events %}
-                <article class="event-card">
-                    <div class="event-card-top">
-                        <span class="badge">{{ event.get_category_display }}</span>
-                        <span class="date-chip">{{ event.date }}</span>
-                    </div>
-                    <h3><a href="{% url 'event_detail' event.id %}">{{ event.title }}</a></h3>
-                    <p>{{ event.description|truncatewords:20 }}</p>
-                    <div class="event-meta">
-                        <span>{{ event.time }}</span>
-                        <span>{{ event.location }}</span>
-                    </div>
-                    <a class="card-link" href="{% url 'event_detail' event.id %}">View details</a>
-                </article>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="empty-state">
-            <h3>No events found</h3>
-            <p>Try another search or create a new event for your audience.</p>
-        </div>
-    {% endif %}
+    <div id="event-results" data-target-url="{% url 'home' %}">
+        {% include 'events/_event_list.html' %}
+    </div>
 </section>
 {% endblock %}

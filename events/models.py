@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 
+# Event model stores all event details for the application.
 class Event(models.Model):
     CATEGORY_SEMINAR = 'seminar'
     CATEGORY_WORKSHOP = 'workshop'
@@ -46,28 +47,31 @@ class Event(models.Model):
     max_participants = models.PositiveIntegerField(null=True, blank=True, help_text="Leave blank for unlimited participants")
 
     def __str__(self):
+        # Display the event title in the admin and admin lists.
         return self.title
 
     def is_registered(self, user):
+        # Return True if the given user is already registered for this event.
         return self.participants.filter(pk=user.pk).exists()
     
     def is_full(self):
-        """Check if event has reached max participants"""
+        # Return True when the event has reached the maximum number of participants.
         if self.max_participants is None:
             return False
         return self.participants.count() >= self.max_participants
     
     def get_available_spots(self):
-        """Get number of available spots"""
+        # Calculate how many spots remain for the event.
         if self.max_participants is None:
             return None
         return self.max_participants - self.participants.count()
 
     def tickets_sold(self):
-        # Sum of confirmed bookings for this event
+        # Count all confirmed booked tickets for this event.
         return Booking.objects.filter(ticket__event=self, status=Booking.STATUS_BOOKED).aggregate(models.Sum('quantity'))['quantity__sum'] or 0
 
 
+# Registration model links a user to an event.
 class Registration(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
@@ -81,9 +85,11 @@ class Registration(models.Model):
         unique_together = ('user', 'event')
 
     def __str__(self):
+        # Show a readable description for registration objects.
         return f"{self.user.username} registered for {self.event.title}"
 
 
+# Venue holds information about event locations.
 class Venue(models.Model):
     name = models.CharField(max_length=200)
     capacity = models.PositiveIntegerField()
@@ -94,6 +100,7 @@ class Venue(models.Model):
         return self.name
 
 
+# Ticket defines a ticket option for an event.
 class Ticket(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='tickets')
     name = models.CharField(max_length=100, default='General')
@@ -105,6 +112,7 @@ class Ticket(models.Model):
         return f"{self.name} - {self.event.title}"
 
 
+# Booking stores a user's ticket order for an event.
 class Booking(models.Model):
     STATUS_BOOKED = 'booked'
     STATUS_CANCELLED = 'cancelled'
@@ -127,6 +135,7 @@ class Booking(models.Model):
         return f"{self.user.username} booked {self.quantity} x {self.ticket.name} for {self.ticket.event.title}"
 
 
+# Attendance records whether a user attended the event.
 class Attendance(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
@@ -140,6 +149,7 @@ class Attendance(models.Model):
         return f"{self.user.username} attendance for {self.event.title}: {self.attended}"
 
 
+# Notification stores messages for users about events.
 class Notification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, null=True, blank=True)

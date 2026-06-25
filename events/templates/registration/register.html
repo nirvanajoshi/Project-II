@@ -12,6 +12,7 @@
     <form class="panel-form auth-card" method="post">
         {% csrf_token %}
         <h2>Create Account</h2>
+        <!-- Render the signup form fields here using Django's form helper. -->
         {{ form.as_p }}
         <button class="button button-primary full-width" type="submit">Register</button>
         <p class="form-note">Already have an account? <a href="{% url 'login' %}">Login here</a></p>
